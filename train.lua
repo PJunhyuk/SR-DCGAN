@@ -47,6 +47,7 @@ for i = 1, #csv do ------ #csv : 9999
   end
 end
 
+print("image load end")
 
 
 
@@ -66,28 +67,21 @@ local ngf = 64
 local ndf = 64
 local nz = 100
 local nc = 1
+local ch = 1
 
 local SpatialBatchNormalization = nn.SpatialBatchNormalization
 local SpatialConvolution = nn.SpatialConvolution
 local SpatialFullConvolution = nn.SpatialFullConvolution
 
 local netG = nn.Sequential()
--- input is Z, going into a convolution
-netG:add(SpatialFullConvolution(nz, ngf * 8, 4, 4))
-netG:add(SpatialBatchNormalization(ngf * 8)):add(nn.ReLU(true))
--- state size: (ngf*8) x 4 x 4
-netG:add(SpatialFullConvolution(ngf * 8, ngf * 4, 4, 4, 2, 2, 1, 1))
-netG:add(SpatialBatchNormalization(ngf * 4)):add(nn.ReLU(true))
--- state size: (ngf*4) x 8 x 8
-netG:add(SpatialFullConvolution(ngf * 4, ngf * 2, 4, 4, 2, 2, 1, 1))
-netG:add(SpatialBatchNormalization(ngf * 2)):add(nn.ReLU(true))
--- state size: (ngf*2) x 16 x 16
-netG:add(SpatialFullConvolution(ngf * 2, ngf, 4, 4, 2, 2, 1, 1))
-netG:add(SpatialBatchNormalization(ngf)):add(nn.ReLU(true))
--- state size: (ngf) x 32 x 32
-netG:add(SpatialFullConvolution(ngf, nc, 4, 4, 2, 2, 1, 1))
-netG:add(nn.Tanh())
--- state size: (nc) x 64 x 64
+netG:add(SpatialConvolution(ch, 16, 3, 3, 1, 1, 0, 0))
+netG:add(nn.LeakyReLU(0.1, true))
+netG:add(SpatialConvolution(16, 32, 3, 3, 1, 1, 0, 0))
+netG:add(nn.LeakyReLU(0.1, true))
+netG:add(SpatialConvolution(32, 64, 3, 3, 1, 1, 0, 0))
+netG:add(nn.LeakyReLU(0.1, true))
+netG:add(SpatialFullConvolution(64, ch, 4, 4, 2, 2, 3, 3):noBias())
+netG:add(nn.View(-1):setNumInputDims(3))
 
 netG:apply(weights_init)
 
