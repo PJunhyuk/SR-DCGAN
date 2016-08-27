@@ -28,7 +28,6 @@ local alpha_util = require 'alpha_util'
 
 require 'torch'
 require 'nn'
-
 require 'cunn'
 
 --[[
@@ -147,7 +146,6 @@ local SpatialBatchNormalization = nn.SpatialBatchNormalization
 local SpatialConvolution = nn.SpatialConvolution
 local SpatialFullConvolution = nn.SpatialFullConvolution
 
-print("cp3")
 local netG = nn.Sequential()
 netG:add(SpatialConvolution(ch, 16, 3, 3, 1, 1, 0, 0))
 netG:add(nn.LeakyReLU(0.1, true))
@@ -255,7 +253,7 @@ local fDx = function(x)
 
   -- train with real
   data_tm:reset(); data_tm:resume()
-  local real = 1 -- data:getBatch()
+  local real = data:getBatch()
   data_tm:stop()
   input:copy(real)
   label:fill(real_label)
