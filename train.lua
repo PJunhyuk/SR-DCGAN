@@ -143,6 +143,7 @@ local nz = 100
 local ch = 1
 local real_label = 1
 local fake_label = 0
+local nc = 3
 
 local SpatialBatchNormalization = nn.SpatialBatchNormalization
 local SpatialConvolution = nn.SpatialConvolution
@@ -165,7 +166,7 @@ print ("netG end")
 local netD = nn.Sequential()
 
 -- input is (nc) x 64 x 64
-netD:add(SpatialConvolution(ch, ndf, 4, 4, 2, 2, 1, 1))
+netD:add(SpatialConvolution(nc, ndf, 4, 4, 2, 2, 1, 1))
 netD:add(nn.LeakyReLU(0.2, true))
 -- state size: (ndf) x 32 x 32
 netD:add(SpatialConvolution(ndf, ndf * 2, 4, 4, 2, 2, 1, 1))
@@ -184,8 +185,6 @@ netD:add(nn.View(1):setNumInputDims(3))
 -- state size: 1
 
 netD:apply(weights_init)
-
-print ("netD end")
 
 
 
