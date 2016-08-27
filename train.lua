@@ -160,3 +160,76 @@ end
 netD:cuda();           netG:cuda();           criterion:cuda()
 
 print("cuda end")
+
+
+
+
+
+local parametersD, gradParametersD = netD:getParameters()
+local parametersG, gradParametersG = netG:getParameters()
+
+noise_vis = noise:clone()
+noise_vis:normal(0, 1)
+
+print("noise end")
+
+
+
+-- create closure to evaluate f(X) and df/dX of discriminator
+local fDx = function(x)
+  gradParametersD:zero()
+
+  -- train with real
+  data_tm:reset(); data_tm:resume()
+  local real = data:getBatch()
+  data_tm:stop()
+  input:copy(real)
+  label:fill(real_label)
+
+  local output = netD:forward(input)
+  local errD_real = criterion:forward(output, label)
+  local df_do = criterion:backward(output, label)
+  netD:backward(input, df_do)
+
+  -- train with fake
+  if opt.noise == 'uniform' then -- regenerate random noise
+    noise:uniform(-1, 1)
+  elseif opt.noise == 'normal' then
+    noise:normal(0, 1)
+  end
+  local fake = netG:forward(noise)
+  input:copy(fake)
+  label:fill(fake_label)
+
+  local output = netD:forward(input)
+  local errD_fake = criterion:forward(output, label)
+  local df_do = criterion:backward(output, label)
+  netD:backward(input, df_do)
+
+  errD = errD_real + errD_fake
+
+  return errD, gradParametersD
+end
+
+print("fDx end")
+
+-- create closure to evaluate f(X) and df/dX of generator
+local fGx = function(x)
+  gradParametersG:zero()
+
+  --[[ the three lines below were already executed in fDx, so save computation
+  noise:uniform(-1, 1) -- regenerate random noise
+  local fake = netG:forward(noise)
+  input:copy(fake) ]]--
+  label:fill(real_label) -- fake labels are real for generator cost
+
+  local output = netD.output -- netD:forward(input) was already executed in fDx, so save computation
+  errG = criterion:forward(output, label)
+  local df_do = criterion:backward(output, label)
+  local df_dg = netD:updateGradInput(input, df_do)
+
+  netG:backward(noise, df_dg)
+  return errG, gradParametersG
+end
+
+print("fGx end")
