@@ -46,6 +46,15 @@ for i = 1, #csv do ------ #csv : 9999
   end
 end
 
+
+
+
+
+local ngf = 64
+local ndf = 64
+local nz = 100
+local nc = 1
+
 local netG = nn.Sequential()
 -- input is Z, going into a convolution
 netG:add(SpatialFullConvolution(nz, ngf * 8, 4, 4))
