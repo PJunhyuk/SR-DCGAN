@@ -26,8 +26,9 @@ local alpha_util = require 'alpha_util'
 
 
 
+require 'torch'
 require 'nn'
-
+require 'optim'
 
 
 local image_list = './data/image_list.txt'
