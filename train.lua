@@ -240,7 +240,7 @@ print("fGx end")
 
 -- train
 local niter = 2
-local ntrain = inf
+local ntrain = 10000
 local batchSize = 200
 local name = jgravity_test
 for epoch = 1, niter do
