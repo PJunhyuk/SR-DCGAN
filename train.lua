@@ -233,3 +233,46 @@ local fGx = function(x)
 end
 
 print("fGx end")
+
+
+
+
+
+-- train
+local niter = 2
+local ntrain = inf
+local batchSize = 200
+local name = jgravity_test
+for epoch = 1, niter do
+   epoch_tm:reset()
+   local counter = 0
+   for i = 1, math.min(data:size(), ntrain), batchSize do
+      tm:reset()
+      -- (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
+      optim.adam(fDx, parametersD, optimStateD)
+
+      -- (2) Update G network: maximize log(D(G(z)))
+      optim.adam(fGx, parametersG, optimStateG)
+
+      -- logging
+      if ((i-1) / batchSize) % 1 == 0 then
+         print(('Epoch: [%d][%8d / %8d]\t Time: %.3f  DataTime: %.3f  '
+                   .. '  Err_G: %.4f  Err_D: %.4f'):format(
+                 epoch, ((i-1) / batchSize),
+                 math.floor(math.min(data:size(), ntrain) / batchSize),
+                 tm:time().real, data_tm:time().real,
+                 errG and errG or -1, errD and errD or -1))
+         ---- sample output on cmd : Epoch: [1][       0 /     1012]   Time: 2.744  DataTime: 0.001    Err_G: 0.6021  Err_D: 1.9472 ...
+      end
+   end
+   paths.mkdir('checkpoints')
+   parametersD, gradParametersD = nil, nil -- nil them to avoid spiking memory
+   parametersG, gradParametersG = nil, nil
+   torch.save('checkpoints/' .. name .. '_' .. epoch .. '_net_G.t7', netG:clearState())
+   torch.save('checkpoints/' .. name .. '_' .. epoch .. '_net_D.t7', netD:clearState())
+   parametersD, gradParametersD = netD:getParameters() -- reflatten the params and get them
+   parametersG, gradParametersG = netG:getParameters()
+   print(('End of epoch %d / %d \t Time Taken: %.3f'):format(
+            epoch, niter, epoch_tm:time().real))
+   ---- sample output on cmd : End of epoch 1 / 25   Time Taken: 465.928
+end
