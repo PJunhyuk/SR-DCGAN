@@ -47,8 +47,10 @@ end
 print("image save end")
 ]]
 
+print("cp1")
 local DataLoader = paths.dofile('data/data.lua')
-local data = DataLoader.new(4, "folder", {})
+print("cp2")
+local data = DataLoader.new(1, "folder", {})
 print("Dataset: " .. folder, " Size: ", data:size())
 ---- sample output on cmd : Dataset: folder  Size:  202599
 
