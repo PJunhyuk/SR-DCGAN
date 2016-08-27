@@ -47,8 +47,8 @@ print("image save end")
 ]]
 
 opt = {
-   dataset = 'lsun',       -- imagenet / lsun / folder
-   batchSize = 64,
+   dataset = 'folder',       -- imagenet / lsun / folder
+   batchSize = 200,
    loadSize = 96,
    fineSize = 64,
    nz = 100,               -- #  of dim for Z
@@ -59,10 +59,10 @@ opt = {
    lr = 0.0002,            -- initial learning rate for adam
    beta1 = 0.5,            -- momentum term of adam
    ntrain = math.huge,     -- #  of examples per epoch. math.huge for full dataset
-   display = 1,            -- display samples while training. 0 = false
+   display = 0,            -- display samples while training. 0 = false
    display_id = 10,        -- display window id.
    gpu = 1,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
-   name = 'experiment1',
+   name = 'jgravity_test',
    noise = 'normal',       -- uniform / normal
 }
 
@@ -202,19 +202,17 @@ local criterion = create_criterion(netG)
 print("create_criterion end")
 ---------------------------------------------------------------------------
 optimStateG = {
-   learningRate = 0.0002,
-   beta1 = 0.5,
+   learningRate = opt.lr,
+   beta1 = opt.beta1,
 }
 optimStateD = {
-   learningRate = 0.0002,
-   beta1 = 0.5,
+   learningRate = opt.lr,
+   beta1 = opt.beta1,
 }
 ----------------------------------------------------------------------------
-local batchSize = 200
-local fineSize = 64
-local input = torch.Tensor(batchSize, 3, fineSize, fineSize)
-local noise = torch.Tensor(batchSize, nz, 1, 1)
-local label = torch.Tensor(batchSize)
+local input = torch.Tensor(opt.batchSize, 3, opt.fineSize, opt.fineSize)
+local noise = torch.Tensor(opt.batchSize, nz, 1, 1)
+local label = torch.Tensor(opt.batchSize)
 local errD, errG
 local epoch_tm = torch.Timer()
 local tm = torch.Timer()
@@ -311,13 +309,10 @@ print("fGx end")
 
 
 -- train
-local niter = 2
-local ntrain = 10000
-local name = jgravity_test
-for epoch = 1, niter do
+for epoch = 1, opt.niter do
    epoch_tm:reset()
    local counter = 0
-   for i = 1, math.min(data:size(), ntrain), batchSize do
+   for i = 1, math.min(data:size(), opt.ntrain), opt.batchSize do
       tm:reset()
       -- (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
       optim.adam(fDx, parametersD, optimStateD)
@@ -326,11 +321,11 @@ for epoch = 1, niter do
       optim.adam(fGx, parametersG, optimStateG)
 
       -- logging
-      if ((i-1) / batchSize) % 1 == 0 then
+      if ((i-1) / opt.batchSize) % 1 == 0 then
          print(('Epoch: [%d][%8d / %8d]\t Time: %.3f  DataTime: %.3f  '
                    .. '  Err_G: %.4f  Err_D: %.4f'):format(
-                 epoch, ((i-1) / batchSize),
-                 math.floor(math.min(data:size(), ntrain) / batchSize),
+                 epoch, ((i-1) / opt.batchSize),
+                 math.floor(math.min(data:size(), opt.ntrain) / opt.batchSize),
                  tm:time().real, data_tm:time().real,
                  errG and errG or -1, errD and errD or -1))
          ---- sample output on cmd : Epoch: [1][       0 /     1012]   Time: 2.744  DataTime: 0.001    Err_G: 0.6021  Err_D: 1.9472 ...
@@ -339,11 +334,11 @@ for epoch = 1, niter do
    paths.mkdir('checkpoints')
    parametersD, gradParametersD = nil, nil -- nil them to avoid spiking memory
    parametersG, gradParametersG = nil, nil
-   torch.save('checkpoints/' .. name .. '_' .. epoch .. '_net_G.t7', netG:clearState())
-   torch.save('checkpoints/' .. name .. '_' .. epoch .. '_net_D.t7', netD:clearState())
+   torch.save('checkpoints/' .. opt.name .. '_' .. epoch .. '_net_G.t7', netG:clearState())
+   torch.save('checkpoints/' .. opt.name .. '_' .. epoch .. '_net_D.t7', netD:clearState())
    parametersD, gradParametersD = netD:getParameters() -- reflatten the params and get them
    parametersG, gradParametersG = netG:getParameters()
    print(('End of epoch %d / %d \t Time Taken: %.3f'):format(
-            epoch, niter, epoch_tm:time().real))
+            epoch, opt.niter, epoch_tm:time().real))
    ---- sample output on cmd : End of epoch 1 / 25   Time Taken: 465.928
 end
