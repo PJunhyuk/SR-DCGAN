@@ -30,6 +30,7 @@ require 'torch'
 require 'nn'
 require 'optim'
 
+require 'cunn'
 
 local image_list = './data/image_list.txt'
 
@@ -52,6 +53,7 @@ print("image load end")
 
 
 
+
 local function weights_init(m)
    local name = torch.type(m)
    if name:find('Convolution') then
@@ -66,7 +68,6 @@ end
 local ngf = 64
 local ndf = 64
 local nz = 100
-local nc = 1
 local ch = 1
 
 local SpatialBatchNormalization = nn.SpatialBatchNormalization
@@ -89,8 +90,8 @@ print ("netG end")
 
 local netD = nn.Sequential()
 
--- input is (nc) x 64 x 64
-netD:add(SpatialConvolution(nc, ndf, 4, 4, 2, 2, 1, 1))
+-- input is (ch) x 64 x 64
+netD:add(SpatialConvolution(ch, ndf, 4, 4, 2, 2, 1, 1))
 netD:add(nn.LeakyReLU(0.2, true))
 -- state size: (ndf) x 32 x 32
 netD:add(SpatialConvolution(ndf, ndf * 2, 4, 4, 2, 2, 1, 1))
@@ -111,3 +112,51 @@ netD:add(nn.View(1):setNumInputDims(3))
 netD:apply(weights_init)
 
 print ("netD end")
+
+
+
+
+
+local function create_criterion(model)
+  local offset = reconstruct.offset_size(model)
+  local output_w = settings.crop_size - offset * 2
+  local weight = torch.Tensor(1, output_w * output_w)
+  weight[1]:fill(1.0)
+  return w2nn.ClippedWeightedHuberCriterion(weight, 0.1, {0.0, 1.0}):cuda()
+end
+
+local criterion = create_criterion(netG)
+
+print("create_criterion end")
+---------------------------------------------------------------------------
+optimStateG = {
+   learningRate = 0.0002,
+   beta1 = 0.5,
+}
+optimStateD = {
+   learningRate = 0.0002,
+   beta1 = 0.5,
+}
+----------------------------------------------------------------------------
+local batchSize = 200
+local fineSize = 64
+local input = torch.Tensor(batchSize, 3, fineSize, fineSize)
+local noise = torch.Tensor(batchSize, nz, 1, 1)
+local label = torch.Tensor(batchSize)
+local errD, errG
+local epoch_tm = torch.Timer()
+local tm = torch.Timer()
+local data_tm = torch.Timer()
+----------------------------------------------------------------------------
+cutorch.setDevice(opt.gpu)
+input = input:cuda();  noise = noise:cuda();  label = label:cuda()
+
+if pcall(require, 'cudnn') then
+  require 'cudnn'
+  cudnn.benchmark = true
+  cudnn.convert(netG, cudnn)
+  cudnn.convert(netD, cudnn)
+end
+netD:cuda();           netG:cuda();           criterion:cuda()
+
+print("cuda end")
