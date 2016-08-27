@@ -118,7 +118,7 @@ print ("netD end")
 
 
 local function create_criterion(model)
-  local offset = reconstruct.offset_size(model)
+  local offset = 1
   local output_w = settings.crop_size - offset * 2
   local weight = torch.Tensor(1, output_w * output_w)
   weight[1]:fill(1.0)
