@@ -189,7 +189,7 @@ netD:apply(weights_init)
 
 
 
-
+--[[
 local function create_criterion(model)
   local offset = 1
   local output_w = settings.crop_size - offset * 2
@@ -199,6 +199,9 @@ local function create_criterion(model)
 end
 
 local criterion = create_criterion(netG)
+]]
+
+local criterion = nn.BCECriterion()
 
 print("create_criterion end")
 ---------------------------------------------------------------------------
