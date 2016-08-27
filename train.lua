@@ -181,7 +181,7 @@ local fDx = function(x)
 
   -- train with real
   data_tm:reset(); data_tm:resume()
-  local real = data:getBatch()
+  local real = 1 -- data:getBatch()
   data_tm:stop()
   input:copy(real)
   label:fill(real_label)
@@ -246,7 +246,7 @@ local name = jgravity_test
 for epoch = 1, niter do
    epoch_tm:reset()
    local counter = 0
-   for i = 1, math.min(data:size(), ntrain), batchSize do
+   for i = 1, math.min(#x, ntrain), batchSize do
       tm:reset()
       -- (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
       optim.adam(fDx, parametersD, optimStateD)
@@ -259,7 +259,7 @@ for epoch = 1, niter do
          print(('Epoch: [%d][%8d / %8d]\t Time: %.3f  DataTime: %.3f  '
                    .. '  Err_G: %.4f  Err_D: %.4f'):format(
                  epoch, ((i-1) / batchSize),
-                 math.floor(math.min(data:size(), ntrain) / batchSize),
+                 math.floor(math.min(#x, ntrain) / batchSize),
                  tm:time().real, data_tm:time().real,
                  errG and errG or -1, errD and errD or -1))
          ---- sample output on cmd : Epoch: [1][       0 /     1012]   Time: 2.744  DataTime: 0.001    Err_G: 0.6021  Err_D: 1.9472 ...
