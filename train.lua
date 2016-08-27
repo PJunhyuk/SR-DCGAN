@@ -41,14 +41,10 @@ for i = 1, #csv do ------ #csv : 9999
   local img = Image.load(filename, 3, 'byte')
   img = Image.rgb2y(img)
   img = Image.scale(img, 64, 64)
-  table.insert(x, {compression.compress(img), {data = {filters = filters}}})
-  xlua.progress(i, #csv)
-  if i % 10 == 0 then
-    collectgarbage()
-  end
+  Image.saveJPG(#x, img)
 end
 
-print("image load end")
+print("image save end")
 
 
 
@@ -241,7 +237,6 @@ print("fGx end")
 -- train
 local niter = 2
 local ntrain = 10000
-local batchSize = 200
 local name = jgravity_test
 for epoch = 1, niter do
    epoch_tm:reset()
