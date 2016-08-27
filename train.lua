@@ -148,7 +148,7 @@ local epoch_tm = torch.Timer()
 local tm = torch.Timer()
 local data_tm = torch.Timer()
 ----------------------------------------------------------------------------
-cutorch.setDevice(opt.gpu)
+cutorch.setDevice(1)
 input = input:cuda();  noise = noise:cuda();  label = label:cuda()
 
 if pcall(require, 'cudnn') then
