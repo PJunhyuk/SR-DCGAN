@@ -56,6 +56,10 @@ local ndf = 64
 local nz = 100
 local nc = 1
 
+local SpatialBatchNormalization = nn.SpatialBatchNormalization
+local SpatialConvolution = nn.SpatialConvolution
+local SpatialFullConvolution = nn.SpatialFullConvolution
+
 local netG = nn.Sequential()
 -- input is Z, going into a convolution
 netG:add(SpatialFullConvolution(nz, ngf * 8, 4, 4))
