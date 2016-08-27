@@ -41,7 +41,7 @@ for i = 1, #csv do ------ #csv : 9999
   local img = Image.load(filename, 3, 'byte')
   img = Image.rgb2y(img)
   img = Image.scale(img, 64, 64)
-  Image.saveJPG("./image/" .. i, img)
+  Image.saveJPG("./image/celeba-" .. i .. ".jpg", img)
 end
 
 print("image save end")
