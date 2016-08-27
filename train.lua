@@ -48,81 +48,10 @@ end
 print("image save end")
 ]]
 
-opt = {
-   dataset = 'folder',       -- imagenet / lsun / folder
-   batchSize = 200,
-   loadSize = 96,
-   fineSize = 64,
-   nz = 100,               -- #  of dim for Z
-   ngf = 64,               -- #  of gen filters in first conv layer
-   ndf = 64,               -- #  of discrim filters in first conv layer
-   nThreads = 4,           -- #  of data loading threads to use
-   niter = 25,             -- #  of iter at starting learning rate
-   lr = 0.0002,            -- initial learning rate for adam
-   beta1 = 0.5,            -- momentum term of adam
-   ntrain = math.huge,     -- #  of examples per epoch. math.huge for full dataset
-   display = 0,            -- display samples while training. 0 = false
-   display_id = 10,        -- display window id.
-   gpu = 1,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
-   name = 'jgravity_test',
-   noise = 'normal',       -- uniform / normal
-}
-
--- one-line argument parser. parses enviroment variables to override the defaults
-for k,v in pairs(opt) do opt[k] = tonumber(os.getenv(k)) or os.getenv(k) or opt[k] end
-print(opt)
----- sample output on cmd :
---[[
-{
-  ntrain : inf
-  beta1 : 0.5
-  name : "jgravity_test2"
-  niter : 25
-  batchSize : 200
-  ndf : 64
-  fineSize : 64
-  nz : 100
-  loadSize : 96
-  gpu : 1
-  ngf : 64
-  dataset : "folder"
-  lr : 0.0002
-  noise : "normal"
-  nThreads : 4
-  display_id : 10
-  display : 0
-}
-
-]]
-
-if opt.display == 0 then opt.display = false end
-
-opt.manualSeed = torch.random(1, 10000) -- fix seed
-print("Random Seed: " .. opt.manualSeed)
----- sample output on cmd : 5354 -> different every times
----- sample output on cmd :
---[[
-Starting donkey with id: 3 seed: 5357
-table: 0x4121aa90
-Starting donkey with id: 1 seed: 5355
-table: 0x40e96e00
-Starting donkey with id: 4 seed: 5358
-table: 0x40c4fc00
-Starting donkey with id: 2 seed: 5356
-table: 0x41acdc00
-Loading train metadata from cache
-Loading train metadata from cache
-Loading train metadata from cache
-Loading train metadata from cache
-]]
-torch.manualSeed(opt.manualSeed)
-torch.setnumthreads(1)
-torch.setdefaulttensortype('torch.FloatTensor')
-
--- create data loader
 local DataLoader = paths.dofile('data/data.lua')
-local data = DataLoader.new(opt.nThreads, opt.dataset, opt)
-print("Dataset: " .. opt.dataset, " Size: ", data:size())
+local data = DataLoader.new(4, folder, )
+print("Dataset: " .. folder, " Size: ", data:size())
+---- sample output on cmd : Dataset: folder  Size:  202599
 
 
 
