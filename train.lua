@@ -141,6 +141,8 @@ local ngf = 64
 local ndf = 64
 local nz = 100
 local ch = 1
+local real_label = 1
+local fake_label = 0
 
 local SpatialBatchNormalization = nn.SpatialBatchNormalization
 local SpatialConvolution = nn.SpatialConvolution
